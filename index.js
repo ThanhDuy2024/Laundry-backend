@@ -4,9 +4,11 @@ import cors from "cors"
 import { database } from "./configs/database.config.js";
 import "dotenv/config"
 import cookieParser from "cookie-parser";
+import { connectRedis } from "./configs/redis.config.js";
 const app = express()
 const port = process.env.PORT
 database();
+connectRedis();
 app.use(express.json())
 app.use(cookieParser())
 
