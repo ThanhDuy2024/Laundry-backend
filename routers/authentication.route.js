@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { loginController, logoutController, profileContoller, registerController, updateProfileController } from "../controllers/authentication.controller.js";
+import { loginController, logoutController, otpConfirm, profileContoller, registerController, updateProfileController } from "../controllers/authentication.controller.js";
 import { usersMiddleware } from "../middlewares/users.middleware.js";
 import { loginValidate, registerValidate } from "../validates/authentication.validate.js";
 import multer from "multer";
@@ -12,6 +12,8 @@ const upload  = multer({
 })
 
 router.post("/register", registerValidate, registerController);
+
+router.post("/otp", otpConfirm);
 
 router.post("/login", loginValidate, loginController);
 
