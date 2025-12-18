@@ -18,4 +18,24 @@ export const createOrder = async (req, res) => {
             message: "Loi tao order"
         })
     }
+};
+
+export const getOrder = async (req, res) => {
+    try {
+        const id = req.users.id;
+
+        const orders = await Order.find({
+            userId: id
+        });
+
+        res.json({
+            code: "success",
+            data: orders
+        })
+    } catch (error) {
+        res.status(400).json({
+            code: "error",
+            message: "Loi truy van order"
+        })
+    }
 }
