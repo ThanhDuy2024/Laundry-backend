@@ -1,6 +1,9 @@
 import { Users } from "../models/users.model.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
+import { randomString } from "../helpers/randomString.helper.js";
+import { client } from "../configs/redis.config.js";
+import { sendingEmail } from "../helpers/nodemailer.helper.js";
 export const registerController = async (req, res) => {
     try {
         const users = await Users.findOne({
@@ -18,16 +21,62 @@ export const registerController = async (req, res) => {
         const hash = bcrypt.hashSync(req.body.password, salt);
         req.body.password = hash;
 
-        await Users.create(req.body);
+        const otp = randomString();
+        const user = {
+            fullName: req.body.fullName,
+            email: req.body.email,
+            phone: req.body.phone,
+            password: req.body.password
+        };
+
+        await client.set(
+            `otp:${otp}`,
+            JSON.stringify(user),
+            { EX: 5 * 60 }
+        )
+
+        sendingEmail(req.body.email, otp);
         res.json({
             code: "success",
-            message: "Dang ky thanh cong"
+            message: "Dang ky thanh cong",
+            otp: otp
         })
     } catch (error) {
+        console.log(error);
         res.status(400).json({
             code: "error",
             message: "Loi dang ky"
         })  
+    }
+}
+
+export const otpConfirm = async (req, res) => {
+    try {
+        const { otp } = req.body;
+
+        const rawData = await client.get(`otp:${otp}`);
+
+        if(!rawData) {
+            return res.status(404).json({
+                code: "error",
+                message: "Sai otp"
+            })
+        };
+
+        
+        const data = JSON.parse(rawData);
+
+        await Users.create(data);
+        res.json({
+            code: "success",
+            message: "Dang ky tai khoan thanh cong"
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({
+            code: "error",
+            message: "Loi otp"
+        })
     }
 }
 

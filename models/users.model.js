@@ -7,6 +7,8 @@ const schema = mongoose.Schema({
     password: String,
     image: String,
     address: String,
+}, {
+    timestamps: true
 });
 
 export const Users = mongoose.model("Users", schema, "users");
